@@ -26,7 +26,9 @@ import com.posthog.internal.PostHogThreadFactory
 import com.posthog.internal.personPropertiesContext
 import com.posthog.internal.replay.PostHogSessionReplayHandler
 import com.posthog.internal.sortMapRecursively
+import com.posthog.internal.surveys.PostHogSurveyHelper
 import com.posthog.internal.surveys.PostHogSurveysHandler
+import com.posthog.surveys.Survey
 import com.posthog.vendor.uuid.TimeBasedEpochGenerator
 import java.util.Date
 import java.util.UUID
@@ -680,6 +682,83 @@ public class PostHog private constructor(
             properties = props,
             userProperties = userProperties,
         )
+    }
+
+    public override fun getSurveys(callback: (List<Survey>) -> Unit) {
+        if (!isEnabled() || isOptOut()) {
+            callback(emptyList())
+            return
+        }
+        val surveys = remoteConfig?.getSurveys() ?: emptyList()
+        callback(surveys)
+    }
+
+    public override fun getActiveMatchingSurveys(callback: (List<Survey>) -> Unit) {
+        if (!isEnabled() || isOptOut()) {
+            callback(emptyList())
+            return
+        }
+        // Fallback: basic filtering using remote config surveys
+        val surveys = remoteConfig?.getSurveys() ?: emptyList()
+        val filtered =
+            PostHogSurveyHelper.filterActiveMatchingSurveys(surveys) { key ->
+                isFeatureEnabled(key)
+            }
+        callback(filtered)
+    }
+
+    public override fun captureSurveyShown(surveyId: String) {
+        if (!isEnabled() || isOptOut()) return
+        val survey = findCachedSurvey(surveyId)
+        val props = baseSurveyProperties(surveyId, survey)
+        capture("survey shown", properties = props)
+    }
+
+    public override fun captureSurveySent(
+        surveyId: String,
+        surveyResponses: Map<String, Any>,
+    ) {
+        if (!isEnabled() || isOptOut()) return
+        val survey = findCachedSurvey(surveyId)
+        val props = baseSurveyProperties(surveyId, survey).toMutableMap()
+        props.putAll(surveyResponses)
+        val interactionKey =
+            if (survey != null) {
+                PostHogSurveyHelper.getSurveyInteractionProperty(survey, "responded")
+            } else {
+                "\$survey_responded/$surveyId"
+            }
+        props["\$set"] = mapOf(interactionKey to true)
+        capture("survey sent", properties = props)
+    }
+
+    public override fun captureSurveyDismissed(surveyId: String) {
+        if (!isEnabled() || isOptOut()) return
+        val survey = findCachedSurvey(surveyId)
+        val props = baseSurveyProperties(surveyId, survey).toMutableMap()
+        val interactionKey =
+            if (survey != null) {
+                PostHogSurveyHelper.getSurveyInteractionProperty(survey, "dismissed")
+            } else {
+                "\$survey_dismissed/$surveyId"
+            }
+        props["\$set"] = mapOf(interactionKey to true)
+        capture("survey dismissed", properties = props)
+    }
+
+    private fun findCachedSurvey(surveyId: String): Survey? {
+        return remoteConfig?.getSurveys()?.firstOrNull { it.id == surveyId }
+    }
+
+    private fun baseSurveyProperties(
+        surveyId: String,
+        survey: Survey?,
+    ): Map<String, Any> {
+        return if (survey != null) {
+            PostHogSurveyHelper.getBaseSurveyEventProperties(survey)
+        } else {
+            mapOf("\$survey_id" to surveyId)
+        }
     }
 
     /**
@@ -1610,6 +1689,29 @@ public class PostHog private constructor(
             flagVariant: String?,
         ) {
             shared.captureFeatureInteraction(flag, flagVariant)
+        }
+
+        public override fun getSurveys(callback: (List<Survey>) -> Unit) {
+            shared.getSurveys(callback)
+        }
+
+        public override fun getActiveMatchingSurveys(callback: (List<Survey>) -> Unit) {
+            shared.getActiveMatchingSurveys(callback)
+        }
+
+        public override fun captureSurveyShown(surveyId: String) {
+            shared.captureSurveyShown(surveyId)
+        }
+
+        public override fun captureSurveySent(
+            surveyId: String,
+            surveyResponses: Map<String, Any>,
+        ) {
+            shared.captureSurveySent(surveyId, surveyResponses)
+        }
+
+        public override fun captureSurveyDismissed(surveyId: String) {
+            shared.captureSurveyDismissed(surveyId)
         }
 
         public override fun isOptOut(): Boolean = shared.isOptOut()

@@ -27,15 +27,20 @@ public final class com/posthog/PostHog : com/posthog/PostHogStateless, com/posth
 	public fun captureException (Ljava/lang/Throwable;Ljava/util/Map;)V
 	public fun captureFeatureInteraction (Ljava/lang/String;Ljava/lang/String;)V
 	public fun captureFeatureView (Ljava/lang/String;Ljava/lang/String;)V
+	public fun captureSurveyDismissed (Ljava/lang/String;)V
+	public fun captureSurveySent (Ljava/lang/String;Ljava/util/Map;)V
+	public fun captureSurveyShown (Ljava/lang/String;)V
 	public fun close ()V
 	public fun distinctId ()Ljava/lang/String;
 	public fun endSession ()V
 	public fun flush ()V
+	public fun getActiveMatchingSurveys (Lkotlin/jvm/functions/Function1;)V
 	public fun getConfig ()Lcom/posthog/PostHogConfig;
 	public fun getFeatureFlag (Ljava/lang/String;Ljava/lang/Object;Ljava/lang/Boolean;)Ljava/lang/Object;
 	public fun getFeatureFlagPayload (Ljava/lang/String;Ljava/lang/Object;)Ljava/lang/Object;
 	public fun getFeatureFlagResult (Ljava/lang/String;Ljava/lang/Boolean;)Lcom/posthog/FeatureFlagResult;
 	public fun getSessionId ()Ljava/util/UUID;
+	public fun getSurveys (Lkotlin/jvm/functions/Function1;)V
 	public fun group (Ljava/lang/String;Ljava/lang/String;Ljava/util/Map;)V
 	public fun identify (Ljava/lang/String;Ljava/util/Map;Ljava/util/Map;)V
 	public fun isFeatureEnabled (Ljava/lang/String;ZLjava/lang/Boolean;)Z
@@ -66,16 +71,21 @@ public final class com/posthog/PostHog$Companion : com/posthog/PostHogInterface 
 	public fun captureException (Ljava/lang/Throwable;Ljava/util/Map;)V
 	public fun captureFeatureInteraction (Ljava/lang/String;Ljava/lang/String;)V
 	public fun captureFeatureView (Ljava/lang/String;Ljava/lang/String;)V
+	public fun captureSurveyDismissed (Ljava/lang/String;)V
+	public fun captureSurveySent (Ljava/lang/String;Ljava/util/Map;)V
+	public fun captureSurveyShown (Ljava/lang/String;)V
 	public fun close ()V
 	public fun debug (Z)V
 	public fun distinctId ()Ljava/lang/String;
 	public fun endSession ()V
 	public fun flush ()V
+	public fun getActiveMatchingSurveys (Lkotlin/jvm/functions/Function1;)V
 	public fun getConfig ()Lcom/posthog/PostHogConfig;
 	public fun getFeatureFlag (Ljava/lang/String;Ljava/lang/Object;Ljava/lang/Boolean;)Ljava/lang/Object;
 	public fun getFeatureFlagPayload (Ljava/lang/String;Ljava/lang/Object;)Ljava/lang/Object;
 	public fun getFeatureFlagResult (Ljava/lang/String;Ljava/lang/Boolean;)Lcom/posthog/FeatureFlagResult;
 	public fun getSessionId ()Ljava/util/UUID;
+	public fun getSurveys (Lkotlin/jvm/functions/Function1;)V
 	public fun group (Ljava/lang/String;Ljava/lang/String;Ljava/util/Map;)V
 	public fun identify (Ljava/lang/String;Ljava/util/Map;Ljava/util/Map;)V
 	public fun isFeatureEnabled (Ljava/lang/String;ZLjava/lang/Boolean;)Z
@@ -305,13 +315,18 @@ public abstract interface class com/posthog/PostHogInterface : com/posthog/PostH
 	public abstract fun captureException (Ljava/lang/Throwable;Ljava/util/Map;)V
 	public abstract fun captureFeatureInteraction (Ljava/lang/String;Ljava/lang/String;)V
 	public abstract fun captureFeatureView (Ljava/lang/String;Ljava/lang/String;)V
+	public abstract fun captureSurveyDismissed (Ljava/lang/String;)V
+	public abstract fun captureSurveySent (Ljava/lang/String;Ljava/util/Map;)V
+	public abstract fun captureSurveyShown (Ljava/lang/String;)V
 	public abstract fun distinctId ()Ljava/lang/String;
 	public abstract fun endSession ()V
+	public abstract fun getActiveMatchingSurveys (Lkotlin/jvm/functions/Function1;)V
 	public abstract fun getConfig ()Lcom/posthog/PostHogConfig;
 	public abstract fun getFeatureFlag (Ljava/lang/String;Ljava/lang/Object;Ljava/lang/Boolean;)Ljava/lang/Object;
 	public abstract fun getFeatureFlagPayload (Ljava/lang/String;Ljava/lang/Object;)Ljava/lang/Object;
 	public abstract fun getFeatureFlagResult (Ljava/lang/String;Ljava/lang/Boolean;)Lcom/posthog/FeatureFlagResult;
 	public abstract fun getSessionId ()Ljava/util/UUID;
+	public abstract fun getSurveys (Lkotlin/jvm/functions/Function1;)V
 	public abstract fun group (Ljava/lang/String;Ljava/lang/String;Ljava/util/Map;)V
 	public abstract fun isFeatureEnabled (Ljava/lang/String;ZLjava/lang/Boolean;)Z
 	public abstract fun isSessionActive ()Z
@@ -1289,6 +1304,13 @@ public final class com/posthog/internal/replay/RRWireframe {
 	public final fun getY ()I
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/posthog/internal/surveys/PostHogSurveyHelper {
+	public static final field INSTANCE Lcom/posthog/internal/surveys/PostHogSurveyHelper;
+	public final fun filterActiveMatchingSurveys (Ljava/util/List;Lkotlin/jvm/functions/Function1;)Ljava/util/List;
+	public final fun getBaseSurveyEventProperties (Lcom/posthog/surveys/Survey;)Ljava/util/Map;
+	public final fun getSurveyInteractionProperty (Lcom/posthog/surveys/Survey;Ljava/lang/String;)Ljava/lang/String;
 }
 
 public abstract interface class com/posthog/internal/surveys/PostHogSurveysHandler {

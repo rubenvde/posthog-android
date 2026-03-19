@@ -1,5 +1,6 @@
 package com.posthog
 
+import com.posthog.surveys.Survey
 import java.util.Date
 import java.util.UUID
 
@@ -283,6 +284,45 @@ public interface PostHogInterface : PostHogCoreInterface {
         flag: String,
         flagVariant: String? = null,
     )
+
+    /**
+     * Returns all cached surveys from remote config.
+     *
+     * @param callback Callback receiving the list of surveys (may be empty)
+     */
+    public fun getSurveys(callback: (List<Survey>) -> Unit)
+
+    /**
+     * Returns surveys matching the current user's targeting and feature flags.
+     *
+     * @param callback Callback receiving the list of active matching surveys
+     */
+    public fun getActiveMatchingSurveys(callback: (List<Survey>) -> Unit)
+
+    /**
+     * Captures a "survey shown" event for the given survey.
+     *
+     * @param surveyId The ID of the survey that was shown
+     */
+    public fun captureSurveyShown(surveyId: String)
+
+    /**
+     * Captures a "survey sent" event with the user's responses.
+     *
+     * @param surveyId The ID of the survey that was completed
+     * @param surveyResponses Map of response keys to response values
+     */
+    public fun captureSurveySent(
+        surveyId: String,
+        surveyResponses: Map<String, Any>,
+    )
+
+    /**
+     * Captures a "survey dismissed" event for the given survey.
+     *
+     * @param surveyId The ID of the survey that was dismissed
+     */
+    public fun captureSurveyDismissed(surveyId: String)
 
     @PostHogInternal
     public fun <T : PostHogConfig> getConfig(): T?

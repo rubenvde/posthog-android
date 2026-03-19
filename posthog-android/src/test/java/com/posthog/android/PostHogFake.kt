@@ -4,6 +4,7 @@ import com.posthog.FeatureFlagResult
 import com.posthog.PostHogConfig
 import com.posthog.PostHogInterface
 import com.posthog.PostHogOnFeatureFlags
+import com.posthog.surveys.Survey
 import java.util.Date
 import java.util.UUID
 
@@ -122,6 +123,26 @@ public class PostHogFake : PostHogInterface {
         flag: String,
         flagVariant: String?,
     ) {
+    }
+
+    override fun getSurveys(callback: (List<Survey>) -> Unit) {
+        callback(emptyList())
+    }
+
+    override fun getActiveMatchingSurveys(callback: (List<Survey>) -> Unit) {
+        callback(emptyList())
+    }
+
+    override fun captureSurveyShown(surveyId: String) {
+    }
+
+    override fun captureSurveySent(
+        surveyId: String,
+        surveyResponses: Map<String, Any>,
+    ) {
+    }
+
+    override fun captureSurveyDismissed(surveyId: String) {
     }
 
     override fun reset() {

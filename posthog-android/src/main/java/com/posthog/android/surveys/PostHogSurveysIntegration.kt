@@ -9,6 +9,7 @@ import com.posthog.android.internal.isMatchingRegex
 import com.posthog.internal.PostHogPreferences
 import com.posthog.internal.formatISO8601Date
 import com.posthog.internal.parseISO8601Date
+import com.posthog.internal.surveys.PostHogSurveyHelper
 import com.posthog.internal.surveys.PostHogSurveysHandler
 import com.posthog.internal.surveys.canActivateRepeatedly
 import com.posthog.internal.surveys.hasEvents
@@ -112,6 +113,17 @@ public class PostHogSurveysIntegration(
         if (shouldShowSurvey) {
             showNextSurvey()
         }
+    }
+
+    /**
+     * Finds a cached survey by its ID.
+     *
+     * @param byId The survey ID to look up
+     * @return The matching survey, or null if not found
+     */
+    internal fun findSurvey(byId: String): Survey? {
+        val surveys = synchronized(surveysLock) { cachedSurveys }
+        return surveys.firstOrNull { it.id == byId }
     }
 
     /**
@@ -709,20 +721,7 @@ public class PostHogSurveysIntegration(
      * Get base properties for survey events
      */
     private fun getBaseSurveyEventProperties(survey: Survey): Map<String, Any> {
-        val props = mutableMapOf<String, Any>()
-
-        props["\$survey_name"] = survey.name
-        props["\$survey_id"] = survey.id
-
-        survey.currentIteration?.let { iteration ->
-            props["\$survey_iteration"] = iteration
-        }
-
-        survey.currentIterationStartDate?.let { startDate ->
-            props["\$survey_iteration_start_date"] = startDate
-        }
-
-        return props
+        return PostHogSurveyHelper.getBaseSurveyEventProperties(survey)
     }
 
     /**
@@ -732,13 +731,7 @@ public class PostHogSurveysIntegration(
         survey: Survey,
         property: String,
     ): String {
-        val currentIteration = survey.currentIteration
-
-        return if (currentIteration != null && currentIteration > 0) {
-            "\$survey_$property/${survey.id}/$currentIteration"
-        } else {
-            "\$survey_$property/${survey.id}"
-        }
+        return PostHogSurveyHelper.getSurveyInteractionProperty(survey, property)
     }
 
     /**
