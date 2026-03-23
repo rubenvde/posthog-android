@@ -1,0 +1,4 @@
+jdk:
+  - openjdk17
+install:
+  - ./gradlew :posthog:publishToMavenLocal :posthog-android:publishToMavenLocal -x test -x lint
