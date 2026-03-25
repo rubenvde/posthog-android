@@ -25,6 +25,7 @@ import com.posthog.surveys.RatingSurveyQuestion
 import com.posthog.surveys.SingleSurveyQuestion
 import com.posthog.surveys.Survey
 import com.posthog.surveys.SurveyMatchType
+import com.posthog.surveys.SurveyType
 import com.posthog.surveys.SurveyPropertyFilter
 import com.posthog.surveys.SurveyQuestion
 import com.posthog.surveys.SurveyQuestionBranching
@@ -186,6 +187,9 @@ public class PostHogSurveysIntegration(
         return surveys.filter { survey ->
             // 1. Filter out inactive surveys (must have start date and no end date)
             if (survey.startDate == null || survey.endDate != null) return@filter false
+
+            // 1.5. Filter out API surveys (they are shown programmatically, not automatically)
+            if (survey.type == SurveyType.API) return@filter false
 
             // 2. Filter out surveys that don't match device type
             if (!doesSurveyDeviceTypesMatch(survey)) return@filter false
