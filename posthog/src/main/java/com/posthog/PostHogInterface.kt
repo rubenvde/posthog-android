@@ -288,16 +288,24 @@ public interface PostHogInterface : PostHogCoreInterface {
     /**
      * Returns all cached surveys from remote config.
      *
+     * @param forceReload If true, bypasses the cache and fetches fresh data from the server
      * @param callback Callback receiving the list of surveys (may be empty)
      */
-    public fun getSurveys(callback: (List<Survey>) -> Unit)
+    public fun getSurveys(
+        forceReload: Boolean = false,
+        callback: (List<Survey>) -> Unit,
+    )
 
     /**
      * Returns surveys matching the current user's targeting and feature flags.
      *
+     * @param forceReload If true, bypasses the cache and fetches fresh data from the server
      * @param callback Callback receiving the list of active matching surveys
      */
-    public fun getActiveMatchingSurveys(callback: (List<Survey>) -> Unit)
+    public fun getActiveMatchingSurveys(
+        forceReload: Boolean = false,
+        callback: (List<Survey>) -> Unit,
+    )
 
     /**
      * Captures a "survey shown" event for the given survey.

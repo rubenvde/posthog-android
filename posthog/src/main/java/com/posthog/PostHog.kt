@@ -684,27 +684,58 @@ public class PostHog private constructor(
         )
     }
 
-    public override fun getSurveys(callback: (List<Survey>) -> Unit) {
+    public override fun getSurveys(
+        forceReload: Boolean,
+        callback: (List<Survey>) -> Unit,
+    ) {
         if (!isEnabled() || isOptOut()) {
             callback(emptyList())
             return
         }
-        val surveys = remoteConfig?.getSurveys() ?: emptyList()
-        callback(surveys)
+        if (forceReload) {
+            loadRemoteConfigRequest(
+                internalOnFeatureFlags = internalOnFeatureFlagsLoaded,
+                onFeatureFlags = {
+                    val surveys = remoteConfig?.getSurveys() ?: emptyList()
+                    callback(surveys)
+                },
+            )
+        } else {
+            val surveys = remoteConfig?.getSurveys() ?: emptyList()
+            callback(surveys)
+        }
     }
 
-    public override fun getActiveMatchingSurveys(callback: (List<Survey>) -> Unit) {
+    public override fun getActiveMatchingSurveys(
+        forceReload: Boolean,
+        callback: (List<Survey>) -> Unit,
+    ) {
         if (!isEnabled() || isOptOut()) {
             callback(emptyList())
             return
         }
-        // Fallback: basic filtering using remote config surveys
-        val surveys = remoteConfig?.getSurveys() ?: emptyList()
-        val filtered =
-            PostHogSurveyHelper.filterActiveMatchingSurveys(surveys) { key ->
-                isFeatureEnabled(key)
-            }
-        callback(filtered)
+        if (forceReload) {
+            loadRemoteConfigRequest(
+                internalOnFeatureFlags = internalOnFeatureFlagsLoaded,
+                onFeatureFlags = {
+                    // After reload, surveys are refreshed and integration has been notified via onSurveysLoaded
+                    val surveys = remoteConfig?.getSurveys() ?: emptyList()
+                    val filtered =
+                        PostHogSurveyHelper.filterActiveMatchingSurveys(surveys) { key ->
+                            isFeatureEnabled(key)
+                        }
+                    callback(filtered)
+                },
+            )
+        } else {
+            // Fallback: basic filtering using remote config surveys
+            val surveys = remoteConfig?.getSurveys() ?: emptyList()
+            val filtered =
+                PostHogSurveyHelper.filterActiveMatchingSurveys(surveys) { key ->
+                    isFeatureEnabled(key)
+                }
+            callback(filtered)
+        }
     }
 
     public override fun captureSurveyShown(surveyId: String) {
@@ -1691,12 +1722,18 @@ public class PostHog private constructor(
             shared.captureFeatureInteraction(flag, flagVariant)
         }
 
-        public override fun getSurveys(callback: (List<Survey>) -> Unit) {
-            shared.getSurveys(callback)
+        public override fun getSurveys(
+            forceReload: Boolean,
+            callback: (List<Survey>) -> Unit,
+        ) {
+            shared.getSurveys(forceReload, callback)
         }
 
-        public override fun getActiveMatchingSurveys(callback: (List<Survey>) -> Unit) {
-            shared.getActiveMatchingSurveys(callback)
+        public override fun getActiveMatchingSurveys(
+            forceReload: Boolean,
+            callback: (List<Survey>) -> Unit,
+        ) {
+            shared.getActiveMatchingSurveys(forceReload, callback)
         }
 
         public override fun captureSurveyShown(surveyId: String) {

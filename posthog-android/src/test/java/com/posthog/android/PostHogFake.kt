@@ -125,11 +125,17 @@ public class PostHogFake : PostHogInterface {
     ) {
     }
 
-    override fun getSurveys(callback: (List<Survey>) -> Unit) {
+    override fun getSurveys(
+        forceReload: Boolean,
+        callback: (List<Survey>) -> Unit,
+    ) {
         callback(emptyList())
     }
 
-    override fun getActiveMatchingSurveys(callback: (List<Survey>) -> Unit) {
+    override fun getActiveMatchingSurveys(
+        forceReload: Boolean,
+        callback: (List<Survey>) -> Unit,
+    ) {
         callback(emptyList())
     }
 
