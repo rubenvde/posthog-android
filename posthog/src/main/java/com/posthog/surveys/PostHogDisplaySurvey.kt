@@ -20,6 +20,7 @@ public data class PostHogDisplaySurvey(
     val appearance: PostHogDisplaySurveyAppearance? = null,
     val startDate: Date? = null,
     val endDate: Date? = null,
+    val conditions: SurveyConditions? = null,
 ) {
     public companion object {
         /**
@@ -36,6 +37,7 @@ public data class PostHogDisplaySurvey(
                 appearance = survey.appearance?.let { PostHogDisplaySurveyAppearance.fromSurveyAppearance(it) },
                 startDate = survey.startDate,
                 endDate = survey.endDate,
+                conditions = survey.conditions,
             )
         }
     }
