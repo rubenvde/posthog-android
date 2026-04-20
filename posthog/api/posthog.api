@@ -1326,6 +1326,7 @@ public final class com/posthog/internal/surveys/PostHogSurveyHelper {
 }
 
 public abstract interface class com/posthog/internal/surveys/PostHogSurveysHandler {
+	public abstract fun getActiveMatchingSurveys ()Ljava/util/List;
 	public abstract fun onEvent (Ljava/lang/String;Ljava/util/Map;)V
 	public abstract fun onSurveysLoaded (Ljava/util/List;)V
 }

@@ -154,7 +154,7 @@ public class PostHogSurveysIntegration(
      *
      * @return List of filtered surveys
      */
-    internal fun getActiveMatchingSurveys(): List<Survey> {
+    public override fun getActiveMatchingSurveys(): List<Survey> {
         // Check if surveys are enabled in config
         if (!config.surveys) {
             return emptyList()
@@ -187,9 +187,6 @@ public class PostHogSurveysIntegration(
         return surveys.filter { survey ->
             // 1. Filter out inactive surveys (must have start date and no end date)
             if (survey.startDate == null || survey.endDate != null) return@filter false
-
-            // 1.5. Filter out API surveys (they are shown programmatically, not automatically)
-            if (survey.type == SurveyType.API) return@filter false
 
             // 2. Filter out surveys that don't match device type
             if (!doesSurveyDeviceTypesMatch(survey)) return@filter false
@@ -599,8 +596,9 @@ public class PostHogSurveysIntegration(
         // Use cached surveys pushed from remote config
         val activeSurveys = getActiveMatchingSurveys()
 
-        // Find the first survey that can be rendered
-        val surveyToShow = activeSurveys.firstOrNull()
+        // Find the first survey that can be rendered. API surveys are shown
+        // programmatically by the host app via the public API, not by the auto-render flow.
+        val surveyToShow = activeSurveys.firstOrNull { it.type != SurveyType.API }
 
         if (surveyToShow != null) {
             // Use the existing showSurvey method which handles all the logic

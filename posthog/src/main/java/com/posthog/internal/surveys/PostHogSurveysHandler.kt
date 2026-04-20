@@ -20,4 +20,13 @@ public interface PostHogSurveysHandler {
      * @param surveys List of surveys loaded from remote config (may be empty)
      */
     public fun onSurveysLoaded(surveys: List<Survey>)
+
+    /**
+     * Returns all surveys matching the current user's display conditions:
+     * active date range, device type, unseen status, wait period, feature flags,
+     * and event-based activation. Used by the public PostHog.getActiveMatchingSurveys API
+     * so that custom UIs get the same filtering behaviour as the built-in auto-render flow
+     * (and as the iOS/JS SDKs).
+     */
+    public fun getActiveMatchingSurveys(): List<Survey>
 }

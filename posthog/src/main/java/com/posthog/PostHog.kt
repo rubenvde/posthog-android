@@ -714,27 +714,29 @@ public class PostHog private constructor(
             callback(emptyList())
             return
         }
+
+        val emit = {
+            // When the surveys integration is installed, delegate so that the full set of
+            // display conditions (event activation, seen status, device type, wait period,
+            // feature flags) is applied — matching the iOS and JS SDKs. Otherwise fall back
+            // to the basic helper filter so pure-core usage still works.
+            val filtered =
+                surveysHandler?.getActiveMatchingSurveys() ?: run {
+                    val surveys = remoteConfig?.getSurveys() ?: emptyList()
+                    PostHogSurveyHelper.filterActiveMatchingSurveys(surveys) { key ->
+                        isFeatureEnabled(key)
+                    }
+                }
+            callback(filtered)
+        }
+
         if (forceReload) {
             loadRemoteConfigRequest(
                 internalOnFeatureFlags = internalOnFeatureFlagsLoaded,
-                onFeatureFlags = {
-                    // After reload, surveys are refreshed and integration has been notified via onSurveysLoaded
-                    val surveys = remoteConfig?.getSurveys() ?: emptyList()
-                    val filtered =
-                        PostHogSurveyHelper.filterActiveMatchingSurveys(surveys) { key ->
-                            isFeatureEnabled(key)
-                        }
-                    callback(filtered)
-                },
+                onFeatureFlags = { emit() },
             )
         } else {
-            // Fallback: basic filtering using remote config surveys
-            val surveys = remoteConfig?.getSurveys() ?: emptyList()
-            val filtered =
-                PostHogSurveyHelper.filterActiveMatchingSurveys(surveys) { key ->
-                    isFeatureEnabled(key)
-                }
-            callback(filtered)
+            emit()
         }
     }
 
